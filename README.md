@@ -92,13 +92,16 @@ feature's definition and business rationale.
 ### 5. Train the baseline model
 
 ```bash
-python -m src.models.train_baseline
+python -m src.models.baseline_logistic
 ```
 
-Trains a logistic regression pipeline (median imputation + scaling +
-one-hot encoding) for each of the 3 label horizons, evaluates on the
-time-based test split (ROC-AUC, PR-AUC, lift-by-decile), and saves each
-model to `models_store/` and its evaluation plot to `docs/figures/`.
+Trains the explainable benchmark — logistic regression (median imputation +
+standardization + one-hot encoding, `class_weight="balanced"`) — for each
+of the 3 label horizons, on a **time-based** train/test split (train on
+months 0-11, test on months 12-17, never random — this is a forecasting
+problem). Reports ROC-AUC, PR-AUC, precision/recall, and lift-by-decile;
+plots calibration and the top risk-increasing/decreasing coefficients for
+interpretability. Saves everything to `results/{models,metrics,figures}/`.
 
 ### 7. Train the core model
 
