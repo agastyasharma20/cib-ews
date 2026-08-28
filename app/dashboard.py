@@ -79,7 +79,13 @@ def inject_css() -> None:
     st.markdown(
         """
         <style>
-        .block-container { padding-top: 1.2rem; }
+        /* Streamlit's own top toolbar (Deploy/Stop/menu) is a fixed,
+        transparent-background bar that floats OVER the page rather than
+        reserving layout space — 1.2rem of top padding wasn't enough to
+        clear it, so the toolbar's own buttons visually overlapped our
+        header's title and credit text. Reported by the user with a
+        screenshot; fixed by pushing content down far enough to clear it. */
+        .block-container { padding-top: 4.5rem; }
 
         .ews-header {
             display: flex; align-items: center; justify-content: space-between;
