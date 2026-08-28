@@ -62,9 +62,23 @@ python -m src.data_generation.generate_synthetic_data
 
 *(Command will be finalized once the generator is built — Phase 1.)*
 
-### 3. Build features and labels
+### 3. Build the deterioration labels
 
-*(To be added — Phase 2.)*
+```bash
+python -m src.labeling.run_labeling
+```
+
+Reads `data/raw/{customers,monthly_panel,ground_truth_cohorts}.parquet`,
+computes the composite Deterioration Index, applies the seasonal
+false-positive filter, builds `deteriorates_in_{30,60,90}d`, validates
+against the known ground-truth cohorts, and saves
+`data/processed/deterioration_labels.parquet`. See
+[`docs/deterioration_definition.md`](docs/deterioration_definition.md) for
+what the index means and how the threshold was chosen.
+
+### 4. Build features
+
+*(To be added — Phase 2b / feature engineering.)*
 
 ### 4. Train models
 
