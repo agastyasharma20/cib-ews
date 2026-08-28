@@ -30,6 +30,8 @@ shap==0.52.0
 
 # --- Survival analysis — verified: Phase 7 ---
 lifelines==0.30.3
+scikit-survival==0.28.0  # RandomSurvivalForest — used instead of Cox after check_assumptions
+                          # found pervasive proportional-hazards violations; see src/models/survival.py
 
 # --- PLANNED — not yet installed/verified ---
 # networkx: Phase 8 (graph features)
