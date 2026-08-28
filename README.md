@@ -187,7 +187,37 @@ for surfacing those cases, not yet built.
 
 ### 9. Survival analysis (time-to-erosion)
 
-*(To be added — Phase 6.)*
+```bash
+python -m src.models.survival
+```
+
+Frames "will this customer deteriorate" as "how long until this customer
+deteriorates" — the event is the labeling framework's own
+`confirmed_deterioration` flag (never the hidden ground truth), snapshotted
+at each customer's earliest fully-defined month (month_idx=5). A
+CoxPHFitter is fit first, as the standard baseline, and explicitly checked
+via `check_assumptions` — it flagged **11 of 24 covariates (46%)** as
+violating the proportional-hazards assumption, including nearly every
+balance-trend feature. That's a pervasive violation, not a couple of
+borderline cases, so the model actually used is a **Random Survival
+Forest** (scikit-survival) instead, which makes no such assumption. The
+train/test split is customer-level (not row-level time-based — see the
+module docstring for why that doesn't translate to one-row-per-customer
+survival data), but the same "never train on what wouldn't be known yet"
+discipline is reproduced by administratively censoring the training fit at
+month 11 and evaluating concordance against full follow-up through month
+17 on held-out customers, before refitting a deployment model on
+everyone's full follow-up for the actual scored table.
+
+**Result: concordance index = 0.659** (Cox's, for comparison, was 0.591 —
+also worse, consistent with the assumption violation). Modest compared to
+the classification models' 0.90+ AUC — expected, since this model gets
+only ONE early snapshot per customer rather than fresh trailing features
+every month. Saves `customer_id, segment, risk_score,
+predicted_median_days_to_deterioration` to
+`data/processed/survival_scores.parquet` (joinable with
+`customer_scores.parquet` by `customer_id`), plus 3 example survival
+curves in `results/figures/survival_example_curves.png`.
 
 ### 10. Graph features (linked-entity risk)
 

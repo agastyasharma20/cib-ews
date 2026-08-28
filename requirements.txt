@@ -3,34 +3,36 @@
 # rather than guessed up front and never re-checked). Packages under
 # "PLANNED — not yet installed" have NOT been run against this
 # environment yet; their pins are provisional and will be verified (and
-# corrected if needed) when that phase is actually built. See the
-# lifelines/pandas note below for a known future conflict already spotted.
+# corrected if needed) when that phase is actually built.
 
-# --- Core data stack (verified: Phases 1-3) ---
-pandas==3.0.3
+# --- Core data stack (verified: Phases 1-7) ---
+# pandas was downgraded from 3.0.3 -> 2.3.3 in Phase 7 to satisfy
+# lifelines==0.30.3's "pandas<3.0" requirement (flagged as a known future
+# conflict back in Phase 3). Before downgrading, every artifact and script
+# from Phases 1-6 was re-run under 2.3.3 and produced byte-identical
+# results (see git history) — the pipeline does not depend on anything
+# pandas 3.0-specific.
+pandas==2.3.3
 numpy==2.4.6
 pyarrow==24.0.0        # parquet I/O for data/raw, data/processed
 
-# --- Modeling (scikit-learn verified: Phase 3) ---
+# --- Modeling (scikit-learn, xgboost, lightgbm verified: Phases 3-5) ---
 scikit-learn==1.9.0
-joblib==1.5.3          # model (de)serialization to models_store/
-
-# --- PLANNED — not yet installed/verified ---
-# xgboost / lightgbm: Phase 4 (core model)
+joblib==1.5.3          # model (de)serialization to results/models/
 xgboost==2.1.3
 lightgbm==4.5.0
-# lifelines: Phase 6 (survival analysis). KNOWN CONFLICT: the latest
-# lifelines (0.30.3) requires pandas<3.0, but pandas==3.0.3 is already
-# pinned above and in active use since Phase 1. Resolving this (most
-# likely downgrading pandas, re-testing Phases 1-3 still work under it)
-# is deferred to when Phase 6 is actually built, rather than downgrading
-# pandas now on a guess.
-lifelines==0.30.3
-# shap — verified: Phase 5. 0.46.0 (originally pinned) fails to import
-# under numpy==2.4.6 (deprecated numpy typing API in shap's plotting
-# color-conversion module raises TypeError on import). 0.52.0 fixes this.
+
+# --- Explainability — verified: Phase 5 ---
+# 0.46.0 (originally pinned) fails to import under numpy==2.4.6
+# (deprecated numpy typing API in shap's plotting color-conversion module
+# raises TypeError on import). 0.52.0 fixes this.
 shap==0.52.0
-# networkx: Phase 7 (graph features)
+
+# --- Survival analysis — verified: Phase 7 ---
+lifelines==0.30.3
+
+# --- PLANNED — not yet installed/verified ---
+# networkx: Phase 8 (graph features)
 networkx==3.4.2
 # streamlit / plotly: Phase 9 (dashboard)
 streamlit==1.39.0

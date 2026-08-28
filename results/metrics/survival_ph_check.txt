@@ -1,0 +1,170 @@
+The ``p_value_threshold`` is set at 0.05. Even under the null hypothesis of no violations, some
+covariates will be below the threshold by chance. This is compounded when there are many covariates.
+Similarly, when there are lots of observations, even minor deviances from the proportional hazard
+assumption will be flagged.
+
+With that in mind, it's best to use a combination of statistical tests and visual tests to determine
+the most serious violations. Produce visual plots using ``check_assumptions(..., show_plots=True)``
+and looking for non-constant lines. See link [A] below for a full example.
+
+<IPython.core.display.HTML object>
+
+
+1. Variable 'amb_trend_slope_3m' failed the non-proportional test: p-value is 0.0008.
+
+   Advice 1: the functional form of the variable 'amb_trend_slope_3m' might be incorrect. That is,
+there may be non-linear terms missing. The proportional hazard test used is very sensitive to
+incorrect functional forms. See documentation in link [D] below on how to specify a functional form.
+
+   Advice 2: try binning the variable 'amb_trend_slope_3m' using pd.cut, and then specify it in
+`strata=['amb_trend_slope_3m', ...]` in the call in `.fit`. See documentation in link [B] below.
+
+   Advice 3: try adding an interaction term with your time variable. See documentation in link [C]
+below.
+
+
+2. Variable 'amb_volatility_3m' failed the non-proportional test: p-value is <5e-05.
+
+   Advice 1: the functional form of the variable 'amb_volatility_3m' might be incorrect. That is,
+there may be non-linear terms missing. The proportional hazard test used is very sensitive to
+incorrect functional forms. See documentation in link [D] below on how to specify a functional form.
+
+   Advice 2: try binning the variable 'amb_volatility_3m' using pd.cut, and then specify it in
+`strata=['amb_volatility_3m', ...]` in the call in `.fit`. See documentation in link [B] below.
+
+   Advice 3: try adding an interaction term with your time variable. See documentation in link [C]
+below.
+
+
+3. Variable 'amb_pct_change_30d' failed the non-proportional test: p-value is <5e-05.
+
+   Advice 1: the functional form of the variable 'amb_pct_change_30d' might be incorrect. That is,
+there may be non-linear terms missing. The proportional hazard test used is very sensitive to
+incorrect functional forms. See documentation in link [D] below on how to specify a functional form.
+
+   Advice 2: try binning the variable 'amb_pct_change_30d' using pd.cut, and then specify it in
+`strata=['amb_pct_change_30d', ...]` in the call in `.fit`. See documentation in link [B] below.
+
+   Advice 3: try adding an interaction term with your time variable. See documentation in link [C]
+below.
+
+
+4. Variable 'amb_pct_change_60d' failed the non-proportional test: p-value is 0.0062.
+
+   Advice 1: the functional form of the variable 'amb_pct_change_60d' might be incorrect. That is,
+there may be non-linear terms missing. The proportional hazard test used is very sensitive to
+incorrect functional forms. See documentation in link [D] below on how to specify a functional form.
+
+   Advice 2: try binning the variable 'amb_pct_change_60d' using pd.cut, and then specify it in
+`strata=['amb_pct_change_60d', ...]` in the call in `.fit`. See documentation in link [B] below.
+
+   Advice 3: try adding an interaction term with your time variable. See documentation in link [C]
+below.
+
+
+5. Variable 'amb_pct_change_90d' failed the non-proportional test: p-value is <5e-05.
+
+   Advice 1: the functional form of the variable 'amb_pct_change_90d' might be incorrect. That is,
+there may be non-linear terms missing. The proportional hazard test used is very sensitive to
+incorrect functional forms. See documentation in link [D] below on how to specify a functional form.
+
+   Advice 2: try binning the variable 'amb_pct_change_90d' using pd.cut, and then specify it in
+`strata=['amb_pct_change_90d', ...]` in the call in `.fit`. See documentation in link [B] below.
+
+   Advice 3: try adding an interaction term with your time variable. See documentation in link [C]
+below.
+
+
+6. Variable 'amb_seasonal_adjusted_deviation' failed the non-proportional test: p-value is 0.0367.
+
+   Advice 1: the functional form of the variable 'amb_seasonal_adjusted_deviation' might be
+incorrect. That is, there may be non-linear terms missing. The proportional hazard test used is very
+sensitive to incorrect functional forms. See documentation in link [D] below on how to specify a
+functional form.
+
+   Advice 2: try binning the variable 'amb_seasonal_adjusted_deviation' using pd.cut, and then
+specify it in `strata=['amb_seasonal_adjusted_deviation', ...]` in the call in `.fit`. See
+documentation in link [B] below.
+
+   Advice 3: try adding an interaction term with your time variable. See documentation in link [C]
+below.
+
+
+7. Variable 'txn_value_trend_slope_3m' failed the non-proportional test: p-value is <5e-05.
+
+   Advice 1: the functional form of the variable 'txn_value_trend_slope_3m' might be incorrect. That
+is, there may be non-linear terms missing. The proportional hazard test used is very sensitive to
+incorrect functional forms. See documentation in link [D] below on how to specify a functional form.
+
+   Advice 2: try binning the variable 'txn_value_trend_slope_3m' using pd.cut, and then specify it
+in `strata=['txn_value_trend_slope_3m', ...]` in the call in `.fit`. See documentation in link [B]
+below.
+
+   Advice 3: try adding an interaction term with your time variable. See documentation in link [C]
+below.
+
+
+8. Variable 'digital_channel_share_trend_3m' failed the non-proportional test: p-value is <5e-05.
+
+   Advice 1: the functional form of the variable 'digital_channel_share_trend_3m' might be
+incorrect. That is, there may be non-linear terms missing. The proportional hazard test used is very
+sensitive to incorrect functional forms. See documentation in link [D] below on how to specify a
+functional form.
+
+   Advice 2: try binning the variable 'digital_channel_share_trend_3m' using pd.cut, and then
+specify it in `strata=['digital_channel_share_trend_3m', ...]` in the call in `.fit`. See
+documentation in link [B] below.
+
+   Advice 3: try adding an interaction term with your time variable. See documentation in link [C]
+below.
+
+
+9. Variable 'login_frequency_trend_3m' failed the non-proportional test: p-value is <5e-05.
+
+   Advice 1: the functional form of the variable 'login_frequency_trend_3m' might be incorrect. That
+is, there may be non-linear terms missing. The proportional hazard test used is very sensitive to
+incorrect functional forms. See documentation in link [D] below on how to specify a functional form.
+
+   Advice 2: try binning the variable 'login_frequency_trend_3m' using pd.cut, and then specify it
+in `strata=['login_frequency_trend_3m', ...]` in the call in `.fit`. See documentation in link [B]
+below.
+
+   Advice 3: try adding an interaction term with your time variable. See documentation in link [C]
+below.
+
+
+10. Variable 'trade_utilization_trend_3m' failed the non-proportional test: p-value is <5e-05.
+
+   Advice 1: the functional form of the variable 'trade_utilization_trend_3m' might be incorrect.
+That is, there may be non-linear terms missing. The proportional hazard test used is very sensitive
+to incorrect functional forms. See documentation in link [D] below on how to specify a functional
+form.
+
+   Advice 2: try binning the variable 'trade_utilization_trend_3m' using pd.cut, and then specify it
+in `strata=['trade_utilization_trend_3m', ...]` in the call in `.fit`. See documentation in link [B]
+below.
+
+   Advice 3: try adding an interaction term with your time variable. See documentation in link [C]
+below.
+
+
+11. Variable 'competitor_txn_share' failed the non-proportional test: p-value is 0.0046.
+
+   Advice 1: the functional form of the variable 'competitor_txn_share' might be incorrect. That is,
+there may be non-linear terms missing. The proportional hazard test used is very sensitive to
+incorrect functional forms. See documentation in link [D] below on how to specify a functional form.
+
+   Advice 2: try binning the variable 'competitor_txn_share' using pd.cut, and then specify it in
+`strata=['competitor_txn_share', ...]` in the call in `.fit`. See documentation in link [B] below.
+
+   Advice 3: try adding an interaction term with your time variable. See documentation in link [C]
+below.
+
+
+---
+[A]  https://lifelines.readthedocs.io/en/latest/jupyter_notebooks/Proportional%20hazard%20assumption.html
+[B]  https://lifelines.readthedocs.io/en/latest/jupyter_notebooks/Proportional%20hazard%20assumption.html#Bin-variable-and-stratify-on-it
+[C]  https://lifelines.readthedocs.io/en/latest/jupyter_notebooks/Proportional%20hazard%20assumption.html#Introduce-time-varying-covariates
+[D]  https://lifelines.readthedocs.io/en/latest/jupyter_notebooks/Proportional%20hazard%20assumption.html#Modify-the-functional-form
+[E]  https://lifelines.readthedocs.io/en/latest/jupyter_notebooks/Proportional%20hazard%20assumption.html#Stratification
+
