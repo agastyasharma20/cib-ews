@@ -89,23 +89,34 @@ split, and saves `data/processed/model_dataset.parquet`. See
 [`docs/feature_dictionary.md`](docs/feature_dictionary.md) for every
 feature's definition and business rationale.
 
-### 4. Train models
+### 5. Train the baseline model
 
-*(To be added — Phases 3–4.)*
+```bash
+python -m src.models.train_baseline
+```
 
-### 5. Explainability (reason codes)
+Trains a logistic regression pipeline (median imputation + scaling +
+one-hot encoding) for each of the 3 label horizons, evaluates on the
+time-based test split (ROC-AUC, PR-AUC, lift-by-decile), and saves each
+model to `models_store/` and its evaluation plot to `docs/figures/`.
+
+### 7. Train the core model
+
+*(To be added — Phase 4.)*
+
+### 8. Explainability (reason codes)
 
 *(To be added — Phase 5.)*
 
-### 6. Survival analysis (time-to-erosion)
+### 9. Survival analysis (time-to-erosion)
 
 *(To be added — Phase 6.)*
 
-### 7. Graph features (linked-entity risk)
+### 10. Graph features (linked-entity risk)
 
 *(To be added — Phase 7.)*
 
-### 8. Run the dashboard
+### 11. Run the dashboard
 
 ```bash
 streamlit run app/main.py

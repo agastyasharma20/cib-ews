@@ -64,9 +64,34 @@ def register(group: str, columns: list[str]) -> None:
     FEATURE_GROUPS[group].extend(c for c in columns if c not in FEATURE_GROUPS[group])
 
 
+def _ensure_groups_registered() -> None:
+    """
+    FEATURE_GROUPS is populated by IMPORTING each group module (register()
+    runs as an import-time side effect in balance_liquidity.py etc.) — so
+    any caller that imports only this config module, without also having
+    imported the group modules first, would silently see an EMPTY registry
+    instead of an error. That exact bug produced a model trained on zero
+    real features early in Phase 3. Every accessor below calls this first
+    so the registry is always populated regardless of import order.
+    Imported lazily (inside the function, not at module load time) because
+    the group modules import FROM this config module — a top-level import
+    here would be circular.
+    """
+    if all(len(cols) == 0 for cols in FEATURE_GROUPS.values()):
+        from src.features import (  # noqa: F401
+            balance_liquidity,
+            transaction_digital,
+            product_wallet_share,
+            network_counterparty,
+            relationship_engagement,
+        )
+
+
 def all_feature_columns() -> list[str]:
+    _ensure_groups_registered()
     return [c for cols in FEATURE_GROUPS.values() for c in cols]
 
 
 def feature_to_group_map() -> dict[str, str]:
+    _ensure_groups_registered()
     return {c: g for g, cols in FEATURE_GROUPS.items() for c in cols}
