@@ -33,9 +33,10 @@ lifelines==0.30.3
 scikit-survival==0.28.0  # RandomSurvivalForest — used instead of Cox after check_assumptions
                           # found pervasive proportional-hazards violations; see src/models/survival.py
 
-# --- PLANNED — not yet installed/verified ---
-# networkx: Phase 8 (graph features)
+# --- Graph features — verified: Phase 8 ---
 networkx==3.4.2
+
+# --- PLANNED — not yet installed/verified ---
 # streamlit / plotly: Phase 9 (dashboard)
 streamlit==1.39.0
 plotly==5.24.1
