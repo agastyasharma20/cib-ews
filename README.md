@@ -219,9 +219,49 @@ predicted_median_days_to_deterioration` to
 `customer_scores.parquet` by `customer_id`), plus 3 example survival
 curves in `results/figures/survival_example_curves.png`.
 
-### 10. Graph features (linked-entity risk)
+### 10. Graph features (wallet-leakage, stretch)
 
-*(To be added — Phase 7.)*
+```bash
+python -m src.graph.wallet_leakage
+python -m src.graph.reevaluate_core_model
+```
+
+**Scoping note:** the synthetic data only records each transaction's
+*counterparty bank*, not a counterparty entity identifier, so the graph
+built here is a customer↔bank bipartite graph (~5,000 customer nodes, 11
+bank nodes) rather than the richer customer↔customer graph the phase name
+evokes — that would need real counterparty account IDs. `wallet_leakage.py`
+builds one bipartite graph per month and computes, per customer: a
+value-weighted competitor-bank share and its 3m/6m trend (both read
+directly off graph edge weights), plus two genuinely graph-native
+measures — bank-diversity degree, and a value-weighted exposure to bank
+eigenvector centrality computed across the *whole portfolio's* graph each
+month (captures whether a customer is disproportionately connected to a
+bank that's gaining share portfolio-wide, not just relative to their own
+history).
+
+`reevaluate_core_model.py` refits the tuned XGBoost core model (Phase 5's
+already-chosen hyperparameters, held fixed, so only the feature set
+changes) with and without the 4 graph features, on identical splits.
+
+**Result: the graph features did NOT meaningfully improve the model.**
+ROC-AUC/PR-AUC are flat to very slightly worse at every horizon (e.g. 90d
+PR-AUC: 0.9027 → 0.9019), and they rank 14th-25th of 27 features by mean
+|SHAP| — nowhere near top drivers. Traced the cause: the value-weighted
+graph features correlate **0.88-0.91** with Phase 2's existing
+`competitor_txn_share`/`_trend` (pandas-derived, from the same underlying
+transactions). The graph computation is methodologically distinct
+(bipartite eigenvector centrality vs. direct aggregation), but on data
+this size it mostly re-derives information XGBoost already had. The one
+partial validation: mean |SHAP| for the competitor-share graph feature
+*is* higher for `sudden_deterioration` (0.133) and `gradual_deterioration`
+(0.096) than `stable` (0.040) — the right directional signal, just not an
+incremental one. Full numbers in
+`results/metrics/graph_feature_before_after.csv` and
+`graph_feature_shap_check.txt`. Kept in the codebase as an honestly-negative
+result and the natural extension point once real counterparty-entity data
+exists (the customer↔customer graph would likely show a real effect via
+shared-counterparty contagion, which this bank-level version cannot see).
 
 ### 11. Run the dashboard
 

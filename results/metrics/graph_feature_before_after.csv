@@ -1,0 +1,7 @@
+horizon,variant,roc_auc,pr_auc,base_rate,n,top_decile_lift
+deteriorates_in_30d,before (no graph features),0.992218269706583,0.9522809224640891,0.10608,25000,8.51
+deteriorates_in_30d,after (+ graph features),0.99211227461617,0.951414822089833,0.10608,25000,8.5
+deteriorates_in_60d,before (no graph features),0.9778487894770544,0.9296719627117047,0.1308,20000,7.2
+deteriorates_in_60d,after (+ graph features),0.9781300883374076,0.9294965625895286,0.1308,20000,7.17
+deteriorates_in_90d,before (no graph features),0.9584749527872007,0.902735654164015,0.1522,15000,6.29
+deteriorates_in_90d,after (+ graph features),0.9579963407734072,0.9018699131227246,0.1522,15000,6.28

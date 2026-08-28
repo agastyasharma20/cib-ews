@@ -59,7 +59,9 @@ def prepare_xy(df: pd.DataFrame, horizon_col: str) -> dict:
     }
 
 
-def prepare_xy_tree(df: pd.DataFrame, horizon_col: str, val_start_month_idx: int = 10) -> dict:
+def prepare_xy_tree(
+    df: pd.DataFrame, horizon_col: str, val_start_month_idx: int = 10, extra_numeric_cols: list[str] | None = None
+) -> dict:
     """
     Same idea as prepare_xy, but for tree models (XGBoost/LightGBM) that
     natively handle missing values and categorical dtypes — so, unlike the
@@ -73,8 +75,15 @@ def prepare_xy_tree(df: pd.DataFrame, horizon_col: str, val_start_month_idx: int
     months are chronologically after the sub-train months and before the
     held-out test months — so early stopping never peeks at genuinely
     future data either.
+
+    `extra_numeric_cols`: additional numeric columns already present in
+    `df` (e.g. Phase 8's graph features, merged in by the caller) to
+    include alongside the standard 5-group feature set — used for the
+    before/after model comparison in src/graph/reevaluate_core_model.py
+    without duplicating this whole function.
     """
     numeric_cols, categorical_cols = get_feature_columns()
+    numeric_cols = numeric_cols + (extra_numeric_cols or [])
     feature_cols = numeric_cols + categorical_cols
 
     valid = df[df[horizon_col].notna()].copy()
