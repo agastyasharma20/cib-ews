@@ -26,8 +26,10 @@ lightgbm==4.5.0
 # is deferred to when Phase 6 is actually built, rather than downgrading
 # pandas now on a guess.
 lifelines==0.30.3
-# shap: Phase 5 (explainability)
-shap==0.46.0
+# shap — verified: Phase 5. 0.46.0 (originally pinned) fails to import
+# under numpy==2.4.6 (deprecated numpy typing API in shap's plotting
+# color-conversion module raises TypeError on import). 0.52.0 fixes this.
+shap==0.52.0
 # networkx: Phase 7 (graph features)
 networkx==3.4.2
 # streamlit / plotly: Phase 9 (dashboard)

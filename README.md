@@ -103,46 +103,65 @@ problem). Reports ROC-AUC, PR-AUC, precision/recall, and lift-by-decile;
 plots calibration and the top risk-increasing/decreasing coefficients for
 interpretability. Saves everything to `results/{models,metrics,figures}/`.
 
-### 7. Train the core model
+### 6. Train the core model (XGBoost / LightGBM, lightly tuned)
 
 ```bash
-python -m src.models.train_core_models
+python -m src.models.core_gbm
 ```
 
-Trains XGBoost and LightGBM for each label horizon on the same time-based
-split, using native missing-value/categorical handling (no imputation,
-scaling, or one-hot encoding — see `src/models/tree_models.py` for why),
-with `scale_pos_weight` for class imbalance and early stopping on a
-time-based validation slice carved from the tail of the training period.
-Evaluates with the identical metrics as the Phase 3 baseline and writes
-`results/metrics/model_comparison.csv` — the apples-to-apples comparison
-table. Requires `results/metrics/baseline_logreg_summary.csv` to exist
+Runs a small randomized hyperparameter search (8 draws per model per
+horizon, scored on a time-based validation slice — never K-fold CV, which
+would reintroduce random-split leakage) for both XGBoost and LightGBM,
+evaluates the tuned models on the held-out test set with the same metrics
+as the baseline (ROC-AUC, PR-AUC, precision/recall, calibration), and picks
+**one algorithm as "the core model"** by average test PR-AUC across all 3
+horizons. Requires `results/metrics/baseline_logreg_summary.csv` to exist
 first (run step 5 above).
 
-**Result:** both tree models modestly beat logistic regression at every
-horizon, XGBoost edging out LightGBM:
+**Result: XGBoost chosen as the core model** (mean PR-AUC 0.928 vs
+LightGBM's 0.895 across horizons) — the winning models are saved as
+`results/models/core_model_{30,60,90}d.joblib`:
 
-| Horizon | Model | ROC-AUC | PR-AUC | Top-decile lift |
-|---|---|---|---|---|
-| 90d | logistic_regression | 0.935 | 0.841 | 5.85 |
-| 90d | lightgbm | 0.949 | 0.851 | 5.97 |
-| 90d | xgboost | 0.957 | 0.896 | 6.23 |
+| Horizon | Model | ROC-AUC | PR-AUC | Precision@0.5 | Recall@0.5 | Top-decile lift |
+|---|---|---|---|---|---|---|
+| 90d | logistic_regression | 0.935 | 0.841 | 0.429 | 0.910 | 5.85 |
+| 90d | lightgbm (tuned) | 0.951 | 0.854 | 0.000 | 0.000 | 6.16 |
+| 90d | xgboost (tuned) | 0.958 | 0.903 | 0.544 | 0.925 | 6.29 |
 
-(See `results/metrics/model_comparison.csv` for all 3 horizons.)
+(See `results/metrics/core_gbm_comparison.csv` for all 3 horizons.)
 
-### 8. Explainability (reason codes)
+Worth noting: LightGBM's PR-AUC/lift are close to XGBoost's, but at the
+default 0.5 threshold its precision/recall collapse to 0 — its predicted
+probabilities skew low even with `scale_pos_weight`. This is exactly why
+the core-model choice is made on PR-AUC (threshold-free) rather than a
+fixed cutoff — see `src/models/core_gbm.py` for the reasoning.
 
-*(To be added — Phase 5.)*
+### 7. Explainability — SHAP reason codes
 
-### 9. Survival analysis (time-to-erosion)
+```bash
+python -m src.explainability.score_customers
+```
+
+Computes SHAP values from the core XGBoost model (90-day horizon) for
+every customer-month, maps the top contributing features to plain-language
+driver labels (`src/explainability/config.py:FEATURE_TO_DRIVER_LABEL` —
+e.g. "Falling balances", "Rising competitor-transfer share", "Reduced
+payroll activity"), and saves a customer-level scored table —
+`customer_id, month, ews_score_30d/60d/90d, top_3_reason_codes` — to
+`data/processed/customer_scores.parquet`. Requires the core models from
+step 6 above. See [`docs/explainability.md`](docs/explainability.md) for
+the full reasoning behind the driver-label mapping and how reason codes
+are ranked.
+
+### 8. Survival analysis (time-to-erosion)
 
 *(To be added — Phase 6.)*
 
-### 10. Graph features (linked-entity risk)
+### 9. Graph features (linked-entity risk)
 
 *(To be added — Phase 7.)*
 
-### 11. Run the dashboard
+### 10. Run the dashboard
 
 ```bash
 streamlit run app/main.py

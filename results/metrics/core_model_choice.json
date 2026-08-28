@@ -1,0 +1,7 @@
+{
+  "core_model_name": "xgboost",
+  "avg_test_pr_auc_by_model": {
+    "xgboost": 0.9282295131132696,
+    "lightgbm": 0.8946450115184775
+  }
+}

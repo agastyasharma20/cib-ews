@@ -45,14 +45,11 @@ import joblib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from sklearn.calibration import calibration_curve
-from sklearn.metrics import classification_report, roc_auc_score
-
 from src.config import PROJECT_ROOT
 from src.models.config import TARGET_HORIZONS
 from src.models.data_prep import load_model_dataset, prepare_xy
 from src.models.baseline_model import build_baseline_pipeline
-from src.models.evaluate import compute_metrics, lift_table, plot_evaluation
+from src.models.evaluate import compute_metrics, lift_table, plot_evaluation, plot_calibration, evaluate_at_threshold
 
 RESULTS_DIR = PROJECT_ROOT / "results"
 MODELS_DIR = RESULTS_DIR / "models"
@@ -66,30 +63,6 @@ def get_feature_names(pipeline) -> list[str]:
     """Human-readable names for every column the model actually sees,
     after the ColumnTransformer's imputation/scaling/one-hot encoding."""
     return list(pipeline.named_steps["preprocess"].get_feature_names_out())
-
-
-def plot_calibration(y_true: np.ndarray, y_proba: np.ndarray, title: str, save_path) -> None:
-    """
-    A calibration plot answers a different question than AUC: "when the
-    model says 70% risk, do ~70% of those customers actually deteriorate?"
-    A well-ranked model (high AUC) can still be poorly CALIBRATED (e.g.
-    systematically over- or under-confident) — this matters a lot for an
-    EWS, since an RM's trust in the tool depends on the risk score meaning
-    what it says, not just ranking customers correctly relative to each
-    other.
-    """
-    fraction_of_positives, mean_predicted_value = calibration_curve(y_true, y_proba, n_bins=10, strategy="quantile")
-
-    fig, ax = plt.subplots(figsize=(6, 6))
-    ax.plot(mean_predicted_value, fraction_of_positives, marker="o", label="Baseline logistic regression")
-    ax.plot([0, 1], [0, 1], linestyle=":", color="grey", label="Perfectly calibrated")
-    ax.set_xlabel("Mean predicted risk (within bin)")
-    ax.set_ylabel("Actual fraction that deteriorated")
-    ax.set_title(f"Calibration — {title}")
-    ax.legend()
-    fig.tight_layout()
-    fig.savefig(save_path, dpi=150)
-    plt.close(fig)
 
 
 def plot_top_coefficients(pipeline, feature_names: list[str], title: str, save_path, top_n: int = 10) -> None:
@@ -121,18 +94,6 @@ def plot_top_coefficients(pipeline, feature_names: list[str], title: str, save_p
     return top_positive.sort_values(ascending=False), top_negative
 
 
-def evaluate_at_threshold(y_true: np.ndarray, y_proba: np.ndarray, threshold: float = 0.5) -> dict:
-    y_pred = (y_proba >= threshold).astype(int)
-    report = classification_report(y_true, y_pred, output_dict=True, zero_division=0)
-    return {
-        "threshold": threshold,
-        "precision": report["1"]["precision"],
-        "recall": report["1"]["recall"],
-        "f1": report["1"]["f1-score"],
-        "support_positive": report["1"]["support"],
-    }
-
-
 def run_for_horizon(df: pd.DataFrame, horizon_col: str) -> dict:
     print(f"\n{'=' * 70}\n{horizon_col}\n{'=' * 70}")
     data = prepare_xy(df, horizon_col)
@@ -160,7 +121,7 @@ def run_for_horizon(df: pd.DataFrame, horizon_col: str) -> dict:
 
     # --- 3. Calibration ---
     calib_path = FIGURES_DIR / f"baseline_logreg_{horizon_col}_calibration.png"
-    plot_calibration(y_test, y_proba, horizon_col, calib_path)
+    plot_calibration(y_test, y_proba, horizon_col, calib_path, model_label="Logistic regression")
     print(f"Saved calibration plot -> {calib_path}")
 
     # --- 4. ROC / PR / lift plot (reused from Phase 3 evaluation framework) ---
