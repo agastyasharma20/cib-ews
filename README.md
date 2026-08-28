@@ -23,28 +23,89 @@ substituted later without reworking the feature, model, or dashboard code.
 ```
 cib-ews/
 ├── data/
-│   ├── raw/            # synthetic raw data (generated, not hand-edited)
-│   └── processed/      # engineered feature tables
+│   ├── raw/                     # synthetic raw data (generated, not hand-edited)
+│   └── processed/               # engineered features, labels, scores, PFaR, survival curves
 ├── src/
-│   ├── config.py            # shared paths, random seed
-│   ├── data_generation/     # synthetic CA/CIB data generator
-│   ├── features/            # feature engineering
-│   ├── labeling/            # forward-looking deterioration label construction
-│   ├── models/               # baseline + core (XGBoost/LightGBM) models
-│   ├── explainability/        # SHAP reason codes
-│   ├── graph/                 # networkx wallet-leakage / linked-entity features
-│   └── dashboard/              # shared logic used by the Streamlit app
-├── notebooks/           # exploratory analysis
-├── app/                  # Streamlit dashboard entry point
-├── tests/
+│   ├── config.py                 # shared paths, random seed — the ONE seam a real data source plugs into
+│   ├── data_generation/          # synthetic CA/CIB data generator (Phase 1)
+│   ├── labeling/                 # deterioration index + forward-looking labels (Phase 2a)
+│   ├── features/                 # 5-group feature pipeline (Phase 2b)
+│   ├── models/                   # baseline, core GBM, survival, PFaR, action engine (Phases 3-7)
+│   ├── explainability/           # SHAP reason codes (Phase 5)
+│   └── graph/                    # networkx wallet-leakage graph feature (Phase 8)
+├── notebooks/                    # EDA (cohort trajectory sanity check)
+├── app/
+│   └── dashboard.py              # Streamlit RM Cockpit + Portfolio View (Phase 9)
+├── results/
+│   ├── models/                   # trained model artifacts (.joblib)
+│   ├── metrics/                  # evaluation tables, comparisons, PH checks (.csv/.json/.txt)
+│   └── figures/                  # ROC/PR/lift/calibration/coefficient/survival/importance plots
 ├── docs/
+│   ├── methodology.md            # this project's master document
+│   ├── deterioration_definition.md
+│   ├── feature_dictionary.md
+│   ├── explainability.md
+│   └── figures/                  # Phase 1 EDA plots
+├── tests/                        # (not yet built)
 ├── requirements.txt
 └── README.md
 ```
 
-## How to Run
+## How to Run — End to End
 
-*(This section is filled in incrementally as each phase is built.)*
+**Environment:** Python 3.12. All commands below assume the repo root as
+the working directory.
+
+```bash
+python -m venv .venv
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+Then, in order (each step reads the previous step's output — see the
+detailed subsections below for what each one does and why):
+
+```bash
+# 1. Generate the synthetic dataset
+python -m src.data_generation.generate_synthetic_data
+
+# 2. Build deterioration labels
+python -m src.labeling.run_labeling
+
+# 3. Build the 5-group feature table
+python -m src.features.build_features
+
+# 4. Train the explainable baseline (logistic regression)
+python -m src.models.baseline_logistic
+
+# 5. Tune + train the core model (XGBoost/LightGBM), pick the winner
+python -m src.models.core_gbm
+
+# 6. SHAP reason codes + customer scoring
+python -m src.explainability.score_customers
+
+# 7. RM action mapping + PFaR risk segmentation
+python -m src.models.pfar
+
+# 8. Survival analysis (time-to-deterioration)
+python -m src.models.survival
+
+# 9. Wallet-leakage graph feature (stretch; re-evaluates the core model)
+python -m src.graph.wallet_leakage
+python -m src.graph.reevaluate_core_model
+
+# 10. Launch the dashboard
+streamlit run app/dashboard.py
+```
+
+Total runtime end-to-end is roughly 15-20 minutes on a laptop CPU, most of
+it in the synthetic data generation (~2 min), SHAP scoring over 90,000
+rows (~3 min), and the core-model hyperparameter search (~2-3 min).
+
+See [`docs/methodology.md`](docs/methodology.md) for the full narrative —
+business problem, every phase's methodology and results, validation
+metrics, known limitations of synthetic data, and the path to production.
+The subsections below are the step-by-step reference.
 
 ### 1. Set up the environment
 
@@ -291,15 +352,26 @@ root was explicitly added to `sys.path` at the top of the file.
 
 ## Project Phases
 
-1. Synthetic data generation (customer master + monthly panel + counterparty
-   transactions + ground-truth cohorts)
-2. Feature engineering + forward-looking label construction
-3. Baseline model (logistic regression) + evaluation framework
-4. Core model (XGBoost / LightGBM) tuned and compared to baseline
-5. Explainability (SHAP) → reason codes per customer
-6. Survival analysis (lifelines) → time-to-erosion estimate
-7. Graph features (networkx) → correlated risk across linked entities /
-   wallet leakage to competitor banks
-8. RM action recommendation engine
-9. Streamlit dashboard
-10. Tests, documentation, polish
+All phases below are complete except the last one.
+
+1. ✅ Synthetic data generation (customer master + monthly panel +
+   counterparty transactions + ground-truth cohorts)
+2. ✅ Deterioration labeling (composite index + forward-looking labels) and
+   5-group feature engineering
+3. ✅ Baseline model (logistic regression) + evaluation framework
+4. ✅ Core model (XGBoost / LightGBM), lightly tuned, compared to baseline
+5. ✅ Explainability (SHAP) → reason codes per customer
+6. ✅ RM action mapping + PFaR risk segmentation
+7. ✅ Survival analysis (Cox → Random Survival Forest) → time-to-
+   deterioration estimate
+8. ✅ Graph feature (networkx wallet-leakage, stretch) → re-evaluated
+   against the core model (honest negative result — see §5.4 of
+   `docs/methodology.md`)
+9. ✅ Streamlit dashboard (RM Cockpit + Portfolio View)
+10. ⬜ Automated tests — not yet built. `docs/methodology.md` (this phase)
+    covers documentation; a `tests/` suite (unit tests for the labeling
+    thresholds, feature leakage-safety, and the action/PFaR logic) is the
+    one remaining gap.
+
+See [`docs/methodology.md`](docs/methodology.md) for the full narrative,
+results, limitations, and path to production.
