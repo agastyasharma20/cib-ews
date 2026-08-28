@@ -105,7 +105,30 @@ interpretability. Saves everything to `results/{models,metrics,figures}/`.
 
 ### 7. Train the core model
 
-*(To be added — Phase 4.)*
+```bash
+python -m src.models.train_core_models
+```
+
+Trains XGBoost and LightGBM for each label horizon on the same time-based
+split, using native missing-value/categorical handling (no imputation,
+scaling, or one-hot encoding — see `src/models/tree_models.py` for why),
+with `scale_pos_weight` for class imbalance and early stopping on a
+time-based validation slice carved from the tail of the training period.
+Evaluates with the identical metrics as the Phase 3 baseline and writes
+`results/metrics/model_comparison.csv` — the apples-to-apples comparison
+table. Requires `results/metrics/baseline_logreg_summary.csv` to exist
+first (run step 5 above).
+
+**Result:** both tree models modestly beat logistic regression at every
+horizon, XGBoost edging out LightGBM:
+
+| Horizon | Model | ROC-AUC | PR-AUC | Top-decile lift |
+|---|---|---|---|---|
+| 90d | logistic_regression | 0.935 | 0.841 | 5.85 |
+| 90d | lightgbm | 0.949 | 0.851 | 5.97 |
+| 90d | xgboost | 0.957 | 0.896 | 6.23 |
+
+(See `results/metrics/model_comparison.csv` for all 3 horizons.)
 
 ### 8. Explainability (reason codes)
 
