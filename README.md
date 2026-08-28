@@ -78,7 +78,16 @@ what the index means and how the threshold was chosen.
 
 ### 4. Build features
 
-*(To be added — Phase 2b / feature engineering.)*
+```bash
+python -m src.features.build_features
+```
+
+Builds all 5 feature groups (Balance & Liquidity, Transaction & Digital
+Activity, Product & Wallet-Share, Network & Counterparty, Relationship &
+Engagement), merges in the Phase 2 labels, applies a time-based train/test
+split, and saves `data/processed/model_dataset.parquet`. See
+[`docs/feature_dictionary.md`](docs/feature_dictionary.md) for every
+feature's definition and business rationale.
 
 ### 4. Train models
 
