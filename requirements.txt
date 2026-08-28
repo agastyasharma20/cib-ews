@@ -1,41 +1,52 @@
-# Pinned so the whole pipeline (synthetic data -> features -> models ->
-# dashboard) reproduces identically on any machine. Versions chosen for
-# mutual compatibility on Python 3.12.
+# Versions below are what was actually installed and verified against while
+# building each phase (updated as later phases install new packages,
+# rather than guessed up front and never re-checked). Packages under
+# "PLANNED — not yet installed" have NOT been run against this
+# environment yet; their pins are provisional and will be verified (and
+# corrected if needed) when that phase is actually built. See the
+# lifelines/pandas note below for a known future conflict already spotted.
 
-# --- Core data stack ---
-pandas==2.2.3
-numpy==2.1.3
-pyarrow==17.0.0        # parquet I/O for data/raw, data/processed
+# --- Core data stack (verified: Phases 1-3) ---
+pandas==3.0.3
+numpy==2.4.6
+pyarrow==24.0.0        # parquet I/O for data/raw, data/processed
 
-# --- Modeling ---
-scikit-learn==1.5.2
+# --- Modeling (scikit-learn verified: Phase 3) ---
+scikit-learn==1.9.0
+joblib==1.5.3          # model (de)serialization to models_store/
+
+# --- PLANNED — not yet installed/verified ---
+# xgboost / lightgbm: Phase 4 (core model)
 xgboost==2.1.3
 lightgbm==4.5.0
-
-# --- Survival analysis (time-to-erosion) ---
-lifelines==0.29.0
-
-# --- Explainability ---
+# lifelines: Phase 6 (survival analysis). KNOWN CONFLICT: the latest
+# lifelines (0.30.3) requires pandas<3.0, but pandas==3.0.3 is already
+# pinned above and in active use since Phase 1. Resolving this (most
+# likely downgrading pandas, re-testing Phases 1-3 still work under it)
+# is deferred to when Phase 6 is actually built, rather than downgrading
+# pandas now on a guess.
+lifelines==0.30.3
+# shap: Phase 5 (explainability)
 shap==0.46.0
-
-# --- Graph features (linked-entity / wallet-leakage risk) ---
+# networkx: Phase 7 (graph features)
 networkx==3.4.2
-
-# --- Dashboard ---
+# streamlit / plotly: Phase 9 (dashboard)
 streamlit==1.39.0
 plotly==5.24.1
 
-# --- Viz (EDA notebooks, static report figures) ---
-matplotlib==3.9.2
+# --- Viz (EDA notebooks, static report figures) — verified: Phase 1 ---
+matplotlib==3.11.0
 seaborn==0.13.2
 
-# --- Notebooks ---
+# --- Notebooks — verified: Phase 1 ---
 jupyter==1.1.1
-ipykernel==6.29.5
+ipykernel==7.1.0
+nbformat==5.10.4
+nbconvert==7.16.6
 
-# --- Testing ---
+# --- Testing — PLANNED, not yet installed/verified ---
 pytest==8.3.3
 
 # --- Utilities ---
-python-dateutil==2.9.0.post0
-tqdm==4.66.5
+python-dateutil==2.9.0.post0  # verified (pandas dependency, already in use)
+tqdm==4.66.5                   # PLANNED — not yet installed/verified
