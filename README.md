@@ -353,7 +353,8 @@ shared-counterparty contagion, which this bank-level version cannot see).
 streamlit run app/dashboard.py
 ```
 
-A UX prototype (not hardened for production) with two views, toggled from
+A UX prototype (not hardened for production), styled with a banking-style
+header and theme (`.streamlit/config.toml`), with three views toggled from
 the sidebar:
 
 - **RM Cockpit** — one row per customer, ranked by PFaR, filterable by
@@ -365,13 +366,37 @@ the sidebar:
   total PFaR, for readability — 150 exist in the full book), a driver-mix
   pie chart, and a portfolio-wide PFaR trend (month-over-month, since the
   underlying data is monthly, not weekly).
+- **About This Project** — a plain-language walkthrough of the whole
+  pipeline, key results, tech stack, and author credit for anyone landing
+  on the dashboard without the README.
+
+**Branding note:** the header uses a generic bank glyph and a scrolling
+disclaimer banner, not HDFC Bank's actual logo or "confidential/internal
+use" language — this repository is public, under the author's own name,
+and independent of HDFC Bank, so the banner says exactly that instead.
 
 Requires steps 6-9 above to have been run at least once (reads their
 parquet outputs directly — no live scoring). Verified end-to-end with
-browser automation, including catching and fixing a real bug:
-`streamlit run app/dashboard.py` sets `sys.path[0]` to `app/`, not the
-project root, so `from src.config import ...` failed until the project
-root was explicitly added to `sys.path` at the top of the file.
+browser automation across all three views, including catching and fixing
+two real bugs: `streamlit run app/dashboard.py` sets `sys.path[0]` to
+`app/`, not the project root, so `from src.config import ...` failed until
+the project root was explicitly added to `sys.path`; and a raw `None` in
+the "days to deterioration" column (a real outcome — see
+`src/models/survival.py` — not missing data) read as broken until replaced
+with an explicit label.
+
+## Presentation Deck
+
+```bash
+python docs/presentation/build_presentation.py
+```
+
+Generates `docs/CIB_EWS_Presentation.pptx` — a 15-slide walkthrough deck
+(business problem → approach → results for every phase → limitations →
+path to production) styled to match the dashboard, for talking through the
+project in an interview without switching to the repo. Regenerate it any
+time after updating results; the script pulls the same figures used
+throughout this README from `docs/figures/` and `results/figures/`.
 
 ## Project Phases
 
