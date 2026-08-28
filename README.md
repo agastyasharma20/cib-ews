@@ -153,15 +153,47 @@ step 6 above. See [`docs/explainability.md`](docs/explainability.md) for
 the full reasoning behind the driver-label mapping and how reason codes
 are ranked.
 
-### 8. Survival analysis (time-to-erosion)
+### 8. RM action mapping + PFaR risk segmentation
+
+```bash
+python -m src.models.pfar
+```
+
+`src/models/action_engine.py` maps a customer's top reason code to a
+concrete recommended action via a swappable rules-based lookup (the exact
+table is business-specified — see the module for the extended coverage of
+labels beyond that table, and the documented interface a future
+contextual-bandit recommender could implement in its place once real
+RM-outcome feedback exists).
+
+`src/models/pfar.py` computes **PFaR** (Probability-weighted Funds at
+Risk) = `ews_score_90d x estimated_balance_at_risk`, where the expected
+balance-decline % is calibrated empirically from customers our OWN
+labeling framework has historically confirmed as deteriorating (never from
+Phase 1's hidden ground truth — that would be leakage a real deployment
+could never replicate). Decomposes PFaR into a driver type
+(liquidity/relationship/competitor) from the top reason code, assigns
+High/Medium/Low priority tiers by portfolio-relative PFaR rank, and saves
+`customer_id, month, segment, PFaR, PFaR_driver_type, priority_tier,
+recommended_action` to `data/processed/pfar_risk_segmentation.parquet`
+(one row per customer — their latest scored month). Requires steps 6-7
+above.
+
+**Note:** PFaR intentionally weights by rupee exposure, so a "top 20 by
+PFaR" table is dominated by Large Corporate customers even at moderate
+risk scores — a very-high-probability SME can rank far lower in absolute
+PFaR. A probability-only or within-segment view is a natural complement
+for surfacing those cases, not yet built.
+
+### 9. Survival analysis (time-to-erosion)
 
 *(To be added — Phase 6.)*
 
-### 9. Graph features (linked-entity risk)
+### 10. Graph features (linked-entity risk)
 
 *(To be added — Phase 7.)*
 
-### 10. Run the dashboard
+### 11. Run the dashboard
 
 ```bash
 streamlit run app/main.py
