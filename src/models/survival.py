@@ -282,6 +282,20 @@ def main() -> None:
     survival_scores.to_parquet(SURVIVAL_SCORES_FILE, index=False)
     print(f"Saved {SURVIVAL_SCORES_FILE} ({len(survival_scores):,} customers)")
 
+    # --- Full survival curve, every customer, in LONG format — the
+    # dashboard (Phase 9) uses this to render a per-customer sparkline
+    # without needing to load the model itself. ---
+    print("Exporting full survival curves for all customers (for the dashboard)...")
+    if use_rsf:
+        curve_matrix = np.array([fn(time_points) for fn in surv_fns])  # (n_customers, n_time_points)
+    else:
+        curve_matrix = deployed_model.predict_survival_function(X_all, times=time_points).T.to_numpy()
+    curves_long = pd.DataFrame(curve_matrix, columns=time_points.astype(int)).assign(
+        customer_id=full_covariates["customer_id"].values
+    ).melt(id_vars="customer_id", var_name="month_offset", value_name="survival_probability")
+    curves_long.to_parquet(DATA_PROCESSED_DIR / "survival_curves.parquet", index=False)
+    print(f"Saved {DATA_PROCESSED_DIR / 'survival_curves.parquet'} ({len(curves_long):,} rows)")
+
     # --- Step 4: 3 example hazard/survival curves spanning the risk spectrum ---
     print("\nGenerating 3 example hazard curves (high / medium / low risk)...")
     order = np.argsort(-risk_score)

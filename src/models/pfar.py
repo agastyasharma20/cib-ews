@@ -49,6 +49,7 @@ from src.models.action_engine import RuleBasedActionRecommender, recommend_actio
 SCORES_FILE = DATA_PROCESSED_DIR / "customer_scores.parquet"
 LABELS_FILE = DATA_PROCESSED_DIR / "deterioration_labels.parquet"
 PFAR_TABLE_FILE = DATA_PROCESSED_DIR / "pfar_risk_segmentation.parquet"
+PFAR_HISTORY_FILE = DATA_PROCESSED_DIR / "pfar_history.parquet"
 
 # --- Which broad driver TYPE each reason-code label rolls up into ---
 # Three business-meaningful buckets: cash/balance mechanics (liquidity),
@@ -167,6 +168,11 @@ def main() -> None:
 
     print("Computing PFaR for every customer-month...")
     pfar_df = compute_pfar_table(scores_df, panel_df, customers_df, labels_df)
+
+    # Full customer-month history (not just the latest snapshot) — the
+    # dashboard (Phase 9) uses this for a portfolio-wide PFaR trend chart.
+    pfar_df[["customer_id", "month", "month_idx", "PFaR"]].to_parquet(PFAR_HISTORY_FILE, index=False)
+    print(f"Saved {PFAR_HISTORY_FILE} ({len(pfar_df):,} customer-months)")
 
     print("Building latest-month risk segmentation snapshot...")
     snapshot = build_latest_snapshot(pfar_df)

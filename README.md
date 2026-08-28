@@ -266,10 +266,28 @@ shared-counterparty contagion, which this bank-level version cannot see).
 ### 11. Run the dashboard
 
 ```bash
-streamlit run app/main.py
+streamlit run app/dashboard.py
 ```
 
-*(To be added — Phase 9.)*
+A UX prototype (not hardened for production) with two views, toggled from
+the sidebar:
+
+- **RM Cockpit** — one row per customer, ranked by PFaR, filterable by
+  segment/branch/priority tier, with EWS score, plain-language top reason
+  codes, recommended action, estimated days to deterioration, and an
+  inline 12-month survival-curve sparkline per row
+  (`st.column_config.LineChartColumn` — no separate detail panel needed).
+- **Portfolio View** — risk heatmap by branch/segment (top 20 branches by
+  total PFaR, for readability — 150 exist in the full book), a driver-mix
+  pie chart, and a portfolio-wide PFaR trend (month-over-month, since the
+  underlying data is monthly, not weekly).
+
+Requires steps 6-9 above to have been run at least once (reads their
+parquet outputs directly — no live scoring). Verified end-to-end with
+browser automation, including catching and fixing a real bug:
+`streamlit run app/dashboard.py` sets `sys.path[0]` to `app/`, not the
+project root, so `from src.config import ...` failed until the project
+root was explicitly added to `sys.path` at the top of the file.
 
 ## Project Phases
 
