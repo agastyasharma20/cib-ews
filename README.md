@@ -18,6 +18,29 @@ HDFC data isn't available, the entire pipeline runs on a realistic
 cohorts for validation), built so a real core-banking data source could be
 substituted later without reworking the feature, model, or dashboard code.
 
+## Key Results at a Glance
+
+| | |
+|---|---|
+| **Core model (XGBoost, 90d horizon)** | ROC-AUC 0.958 · PR-AUC 0.903 · 6.3x lift in the top decile |
+| **Label validation vs. hidden ground truth** | 98.9% precision / 98.3% recall on planted deterioration cohorts; 0.1-1.7% false-positive rate on stable/seasonal cohorts |
+| **Survival model (time-to-deterioration)** | Concordance index 0.659 (Random Survival Forest, chosen after Cox's proportional-hazards check failed on 46% of covariates) |
+| **Graph feature experiment** | Honest negative result — no AUC improvement; traced to 0.88-0.91 correlation with an existing feature, not a dead end hidden from the numbers |
+| **End-to-end deliverable** | Synthetic data → labels → features → model → SHAP reason codes → PFaR risk sizing → RM actions → survival estimate → Streamlit dashboard |
+
+Full methodology, every number, and the reasoning behind each modeling
+choice: [`docs/methodology.md`](docs/methodology.md).
+
+## Screenshots
+
+**RM Cockpit** — customers ranked by PFaR, filterable, with inline survival-curve sparklines:
+
+![RM Cockpit](docs/figures/dashboard_rm_cockpit.png)
+
+**Portfolio View** — branch/segment risk heatmap, driver-mix breakdown, PFaR trend:
+
+![Portfolio View](docs/figures/dashboard_portfolio_view.png)
+
 ## Project Structure
 
 ```
@@ -375,3 +398,16 @@ All phases below are complete except the last one.
 
 See [`docs/methodology.md`](docs/methodology.md) for the full narrative,
 results, limitations, and path to production.
+
+## License
+
+Copyright (c) 2026 Agastya Sharma. All Rights Reserved. This repository is
+public for portfolio/demonstration purposes only — see [`LICENSE`](LICENSE)
+for terms. No permission is granted to reuse, modify, or redistribute this
+code without prior written permission.
+
+## Author
+
+**Agastya Sharma**
+[work.agastya20@gmail.com](mailto:work.agastya20@gmail.com) ·
+[GitHub @agastyasharma20](https://github.com/agastyasharma20)
