@@ -67,7 +67,17 @@ DISCLAIMER_TEXT = (
     f"Built by {AUTHOR_NAME}."
 )
 
-CHART_COLORS = {"liquidity": "#155E75", "relationship": "#0891B2", "competitor": "#EA580C"}
+# HDFC-INSPIRED palette: a deep navy + red combination in the spirit of
+# HDFC Bank's brand colors — NOT their logo or an exact brand-guideline
+# match, just a color language in the same family. Colors aren't
+# trademarked the way a logo mark is, so this is a safe way to nod at the
+# target institution's visual identity without reproducing their actual
+# protected asset (see the disclaimer banner/footer for why that line
+# matters on a public repo).
+HDFC_RED = "#E4002B"
+HDFC_RED_DARK = "#B3001F"
+HDFC_NAVY = "#0B2447"
+CHART_COLORS = {"liquidity": "#0B2447", "relationship": "#19376D", "competitor": "#E4002B"}
 
 st.set_page_config(page_title="CIB Early Warning System", page_icon="🏦", layout="wide")
 
@@ -89,30 +99,32 @@ def inject_css() -> None:
 
         .ews-header {
             display: flex; align-items: center; justify-content: space-between;
-            padding: 0.6rem 1rem; margin-bottom: 0.6rem;
-            background: linear-gradient(90deg, #0F172A 0%, #155E75 100%);
+            padding: 0.6rem 1.1rem; margin-bottom: 0.6rem;
+            background: linear-gradient(90deg, #0B2447 0%, #19376D 65%, #E4002B 100%);
             border-radius: 10px; color: white;
+            box-shadow: 0 2px 10px rgba(11,36,71,0.25);
         }
         .ews-header .brand { display: flex; align-items: center; gap: 0.7rem; }
         .ews-header .logo-mark {
-            font-size: 1.9rem; background: white; color: #155E75;
-            border-radius: 8px; width: 46px; height: 46px;
+            font-size: 1.7rem; background: white; color: #E4002B;
+            border-radius: 50%; width: 46px; height: 46px;
             display: flex; align-items: center; justify-content: center;
+            border: 2px solid #E4002B;
         }
         .ews-header .title { font-size: 1.25rem; font-weight: 700; line-height: 1.1; }
         .ews-header .subtitle { font-size: 0.78rem; opacity: 0.85; }
         .ews-header .credit { font-size: 0.8rem; text-align: right; opacity: 0.9; }
-        .ews-header .credit a { color: #7DD3FC; text-decoration: none; }
+        .ews-header .credit a { color: #FFC1CC; text-decoration: none; }
 
         .ews-marquee-wrap {
-            overflow: hidden; white-space: nowrap; background: #FEF3C7;
-            border: 1px solid #FDE68A; border-radius: 6px; padding: 0.35rem 0;
+            overflow: hidden; white-space: nowrap; background: #FFF1F2;
+            border: 1px solid #FECDD3; border-radius: 6px; padding: 0.35rem 0;
             margin-bottom: 1rem;
         }
         .ews-marquee-track {
             display: inline-block; padding-left: 100%;
             animation: ews-scroll 22s linear infinite;
-            font-size: 0.82rem; color: #92400E; font-weight: 600;
+            font-size: 0.82rem; color: #B3001F; font-weight: 600;
         }
         @keyframes ews-scroll {
             0%   { transform: translate(0, 0); }
@@ -333,7 +345,7 @@ def render_portfolio_view(df: pd.DataFrame) -> None:
             .reindex(top_branches)
         )
         fig = px.imshow(
-            heatmap_data, color_continuous_scale="Blues", aspect="auto",
+            heatmap_data, color_continuous_scale="Reds", aspect="auto",
             labels=dict(color="Mean PFaR (Cr)"),
         )
         fig.update_layout(height=500)
@@ -358,7 +370,7 @@ def render_portfolio_view(df: pd.DataFrame) -> None:
     filtered_ids = set(df["customer_id"])
     history = history[history["customer_id"].isin(filtered_ids)]
     trend = history.groupby("month", as_index=False)["PFaR"].sum().sort_values("month")
-    fig = px.line(trend, x="month", y="PFaR", markers=True, color_discrete_sequence=["#155E75"])
+    fig = px.line(trend, x="month", y="PFaR", markers=True, color_discrete_sequence=["#0B2447"])
     fig.update_layout(height=350, yaxis_title="Total portfolio PFaR (Cr)")
     st.plotly_chart(fig, use_container_width=True)
 
@@ -434,7 +446,9 @@ banking data isn't available outside a bank's own systems.
 
 *This is an independent portfolio project created for a Data Science internship application.
 It is not affiliated with, sponsored by, or built using any real data from HDFC Bank or any
-other financial institution — every number on this dashboard is synthetic.*
+other financial institution — every number on this dashboard is synthetic. The navy/red color
+theme is inspired by HDFC Bank's brand colors as a visual nod to the target institution; no
+HDFC Bank logo or trademarked asset is used anywhere in this project.*
         """
     )
 
