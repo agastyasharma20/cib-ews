@@ -1,5 +1,7 @@
 # CIB Early Warning System (EWS)
 
+**🔴 Live demo:** [hdfc-eib-ews.streamlit.app](https://hdfc-eib-ews.streamlit.app/) — no setup required, opens straight into the RM Cockpit.
+
 ## Business Problem
 
 HDFC Bank's Current Account / CIB ("Customers in Base") portfolio faces a
@@ -349,9 +351,20 @@ shared-counterparty contagion, which this bank-level version cannot see).
 
 ### 11. Run the dashboard
 
+**Live:** [hdfc-eib-ews.streamlit.app](https://hdfc-eib-ews.streamlit.app/) (Streamlit Community Cloud — see "Deploying Your Own Copy" below for how this was set up).
+
+To run locally instead:
+
 ```bash
 streamlit run app/dashboard.py
 ```
+
+Reads a small committed "serving snapshot" in `app/data/` (~3.6MB, the 6
+files the dashboard actually needs) rather than the full pipeline's
+`data/raw/`/`data/processed/` output — see the comment at the top of
+`app/dashboard.py` for why. Run the full pipeline (steps 1-9 above) and
+those files reflect the real thing; the committed snapshot is only there
+so the dashboard works immediately after a fresh clone, deployed or local.
 
 A UX prototype (not hardened for production), styled with a banking-style
 header and theme (`.streamlit/config.toml`), with three views toggled from
@@ -384,6 +397,30 @@ the project root was explicitly added to `sys.path`; and a raw `None` in
 the "days to deterioration" column (a real outcome — see
 `src/models/survival.py` — not missing data) read as broken until replaced
 with an explicit label.
+
+### Deploying Your Own Copy (Streamlit Community Cloud)
+
+1. Push the repo to your own GitHub account.
+2. At [share.streamlit.io](https://share.streamlit.io), sign in with GitHub → "Create app" → point it at your fork, branch `master`, main file path `app/dashboard.py`.
+3. Deploy.
+
+**A real deployment bug, for the record:** the first deploy failed —
+Streamlit Cloud's build defaulted to **Python 3.14** (very new), and
+Pillow (a core Streamlit dependency) has no prebuilt wheel for it yet, so
+pip tried compiling it from source and failed on missing `zlib` headers.
+Fixed with `runtime.txt` (`python-3.11`, a version every pinned dependency
+already ships prebuilt wheels for — verified against PyPI before
+committing, not assumed) at the repo root, plus a full **"Reboot app"**
+(an incremental redeploy didn't pick up the Python-version change; a
+reboot rebuilds the environment from scratch). Also uses **`app/
+requirements.txt`** — Streamlit Cloud prefers a requirements file in the
+entrypoint's own folder, which lets the deployed app install only what
+`app/dashboard.py` actually imports (`streamlit`, `pandas`, `numpy`,
+`pyarrow`, `plotly`) rather than the full pipeline's heavier stack
+(`xgboost`, `lightgbm`, `shap`, `lifelines`, `scikit-survival`, `networkx`
+— none of which the dashboard needs, and `scikit-survival` in particular
+is a slow, failure-prone compiled package to build in a constrained cloud
+environment for zero benefit).
 
 ## Presentation Deck
 
