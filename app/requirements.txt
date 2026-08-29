@@ -1,0 +1,17 @@
+# Slim requirements for the DEPLOYED dashboard only. Streamlit Community
+# Cloud looks for a requirements.txt in the same folder as the entrypoint
+# file (app/dashboard.py) before falling back to the repo root — this file
+# takes advantage of that so the live deployment only installs what
+# app/dashboard.py actually imports (pandas, numpy, plotly, streamlit —
+# it only reads parquet files, it never trains a model or computes SHAP).
+#
+# The repo-root requirements.txt is for running the FULL pipeline locally
+# (xgboost, lightgbm, shap, lifelines, scikit-survival, networkx, etc.) —
+# none of that is needed to serve the dashboard, and scikit-survival in
+# particular is a compiled package that's slow and failure-prone to build
+# in a constrained cloud build environment for zero benefit here.
+streamlit==1.39.0
+pandas==2.3.3
+numpy==2.4.6
+pyarrow==24.0.0
+plotly==5.24.1

@@ -416,13 +416,39 @@ All phases below are complete except the last one.
    against the core model (honest negative result — see §5.4 of
    `docs/methodology.md`)
 9. ✅ Streamlit dashboard (RM Cockpit + Portfolio View)
-10. ⬜ Automated tests — not yet built. `docs/methodology.md` (this phase)
-    covers documentation; a `tests/` suite (unit tests for the labeling
-    thresholds, feature leakage-safety, and the action/PFaR logic) is the
-    one remaining gap.
+10. ✅ Automated tests (`tests/`) — 18 tests covering the labeling
+    framework's percentile ranking and seasonal false-positive filter,
+    leakage-safety of the rolling feature functions, and the action-engine
+    / PFaR logic.
 
 See [`docs/methodology.md`](docs/methodology.md) for the full narrative,
 results, limitations, and path to production.
+
+## Running the Tests
+
+```bash
+pip install pytest
+python -m pytest tests/ -v
+```
+
+18 tests, no dependency on the generated dataset (each uses small,
+hand-built synthetic inputs so they run in seconds and fail for a real
+logic reason, not a missing file). They cover the properties that matter
+most for trusting the rest of the project's numbers:
+
+- **Percentile ranking direction** — the worst decline scores highest, and
+  ranking is relative to segment+month, not absolute (`test_labeling.py`).
+- **Seasonal false-positive filter** — a reverting, uncorroborated dip is
+  suppressed; a reverting-but-corroborated or a persistent breach is kept
+  (`test_labeling.py`).
+- **Forward-label censoring** — insufficient future history yields `NaN`,
+  never a silent `False` (`test_labeling.py`).
+- **Feature leakage-safety** — mutating only FUTURE rows of a panel leaves
+  a trailing feature's earlier values provably unchanged
+  (`test_features_leakage.py`).
+- **RM action mapping & PFaR** — every business-specified reason-code →
+  action pair, the driver-type decomposition, and the priority-tier
+  quantile boundaries (`test_action_engine_and_pfar.py`).
 
 ## License
 

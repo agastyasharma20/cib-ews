@@ -49,13 +49,22 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-from src.config import DATA_PROCESSED_DIR, CUSTOMERS_FILE
-
-PFAR_TABLE_FILE = DATA_PROCESSED_DIR / "pfar_risk_segmentation.parquet"
-PFAR_HISTORY_FILE = DATA_PROCESSED_DIR / "pfar_history.parquet"
-SCORES_FILE = DATA_PROCESSED_DIR / "customer_scores.parquet"
-SURVIVAL_SCORES_FILE = DATA_PROCESSED_DIR / "survival_scores.parquet"
-SURVIVAL_CURVES_FILE = DATA_PROCESSED_DIR / "survival_curves.parquet"
+# The full pipeline writes to data/raw/ and data/processed/ — both
+# .gitignored as regenerable multi-minute pipeline output (see
+# docs/methodology.md §10). For a LIVE public deployment (Streamlit
+# Community Cloud clones the repo fresh; it can't run the ~15-20 minute
+# pipeline on every boot), a small "serving snapshot" of just the 6 files
+# this dashboard actually reads (~3.6MB total) is committed to app/data/
+# instead. Anyone running the full pipeline locally regenerates the real
+# thing in data/raw|processed/; this dashboard always reads the committed
+# snapshot so a fresh `git clone` + `streamlit run` works with no setup.
+APP_DATA_DIR = Path(__file__).resolve().parent / "data"
+CUSTOMERS_FILE = APP_DATA_DIR / "customers.parquet"
+PFAR_TABLE_FILE = APP_DATA_DIR / "pfar_risk_segmentation.parquet"
+PFAR_HISTORY_FILE = APP_DATA_DIR / "pfar_history.parquet"
+SCORES_FILE = APP_DATA_DIR / "customer_scores.parquet"
+SURVIVAL_SCORES_FILE = APP_DATA_DIR / "survival_scores.parquet"
+SURVIVAL_CURVES_FILE = APP_DATA_DIR / "survival_curves.parquet"
 
 AUTHOR_NAME = "Agastya Sharma"
 AUTHOR_EMAIL = "work.agastya20@gmail.com"
